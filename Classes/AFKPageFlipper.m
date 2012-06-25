@@ -204,7 +204,7 @@
 }
 
 
-- (void)setFlipProgress:(float) progress setDelegate:(BOOL) setDelegate animate:(BOOL) animate {
+- (void)setFlipProgress:(float)progress setDelegate:(BOOL)setDelegate animate:(BOOL)animate {
   if (animating) return;
   if (animate) animating = YES;
   
@@ -507,6 +507,8 @@
   self.currentImage = Nil;
 	self.nextView = Nil;
   self.nextImage = Nil;
+  self.prevView = Nil;
+  self.prevImage = Nil;
 	self.panRecognizer = Nil;
   [super dealloc];
 }
