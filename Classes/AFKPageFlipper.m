@@ -24,13 +24,13 @@
 
 
 - (UIImage *) imageByRenderingView {
-    CGFloat oldAlpha = self.alpha;
-    self.alpha = 1;
-    UIGraphicsBeginImageContext(self.bounds.size);
+  CGFloat oldAlpha = self.alpha;
+  self.alpha = 1.0f;
+  UIGraphicsBeginImageContext(self.bounds.size);
 	[self.layer renderInContext:UIGraphicsGetCurrentContext()];
 	UIImage *resultingImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-    self.alpha = oldAlpha;
+  self.alpha = oldAlpha;
 	return resultingImage;
 }
 
@@ -44,72 +44,70 @@
 @interface AFKPageFlipper()
 
 @property (nonatomic,assign) UIView *currentView;
+@property (nonatomic,retain) UIImage *currentImage;
 @property (nonatomic,assign) UIView *nextView;
+@property (nonatomic,retain) UIImage *nextImage;
 
 @end
 
 
 @implementation AFKPageFlipper
 
-@synthesize tapRecognizer = _tapRecognizer;
 @synthesize panRecognizer = _panRecognizer;
-
+@synthesize currentImage;
+@synthesize nextImage;
 
 #pragma mark -
 #pragma mark Flip functionality
 
 
 - (void) initFlip {
-	
-	// Create screenshots of view
-	
-	UIImage *currentImage = [self.currentView imageByRenderingView];
-	UIImage *newImage = [self.nextView imageByRenderingView];
-	
 	// Hide existing views
-	
-	self.currentView.alpha = 0;
-	self.nextView.alpha = 0;
+	self.currentView.alpha = 0.0f;
+	self.nextView.alpha = 0.0f;
 	
 	// Create representational layers
-	
 	CGRect rect = self.bounds;
-	rect.size.width /= 2;
+	rect.size.height /= 2;
 	
 	backgroundAnimationLayer = [CALayer layer];
 	backgroundAnimationLayer.frame = self.bounds;
 	backgroundAnimationLayer.zPosition = -300000;
 	
-	CALayer *leftLayer = [CALayer layer];
-	leftLayer.frame = rect;
-	leftLayer.masksToBounds = YES;
-	leftLayer.contentsGravity = kCAGravityLeft;
+	CALayer *topLayer = [CALayer layer];
+	topLayer.frame = rect;
+	topLayer.masksToBounds = YES;
+	topLayer.contentsGravity = kCAGravityBottom;
 	
-	[backgroundAnimationLayer addSublayer:leftLayer];
+	[backgroundAnimationLayer addSublayer:topLayer];
 	
-	rect.origin.x = rect.size.width;
+	rect.origin.y = rect.size.height;
 	
-	CALayer *rightLayer = [CALayer layer];
-	rightLayer.frame = rect;
-	rightLayer.masksToBounds = YES;
-	rightLayer.contentsGravity = kCAGravityRight;
+	CALayer *bottomLayer = [CALayer layer];
+	bottomLayer.frame = rect;
+	bottomLayer.masksToBounds = YES;
+	bottomLayer.contentsGravity = kCAGravityTop;
 	
-	[backgroundAnimationLayer addSublayer:rightLayer];
+	[backgroundAnimationLayer addSublayer:bottomLayer];
 	
-	if (flipDirection == AFKPageFlipperDirectionRight) {
-		leftLayer.contents = (id) [newImage CGImage];
-		rightLayer.contents = (id) [currentImage CGImage];
+	if (flipDirection == AFKPageFlipperDirectionDown) {
+		topLayer.contents = (id) [nextImage CGImage];
+    revealedLayer = topLayer;
+		bottomLayer.contents = (id) [currentImage CGImage];
+    coveredLayer = bottomLayer;
 	} else {
-		leftLayer.contents = (id) [currentImage CGImage];
-		rightLayer.contents = (id) [newImage CGImage];
+		topLayer.contents = (id) [currentImage CGImage];
+    coveredLayer = topLayer;
+		bottomLayer.contents = (id) [nextImage CGImage];
+    revealedLayer = bottomLayer;
 	}
 
 	[self.layer addSublayer:backgroundAnimationLayer];
 	
-	rect.origin.x = 0;
+	rect.origin.y = 0;
 	
 	flipAnimationLayer = [CATransformLayer layer];
-	flipAnimationLayer.anchorPoint = CGPointMake(1.0, 0.5);
+	flipAnimationLayer.anchorPoint = CGPointMake(0.5, 1.0);
 	flipAnimationLayer.frame = rect;
 	
 	[self.layer addSublayer:flipAnimationLayer];
@@ -125,33 +123,33 @@
 	frontLayer.frame = flipAnimationLayer.bounds;
 	frontLayer.doubleSided = NO;
 	frontLayer.masksToBounds = YES;
-	frontLayer.transform = CATransform3DMakeRotation(M_PI, 0, 1.0, 0);
+	frontLayer.transform = CATransform3DMakeRotation(M_PI, -1.0, 0.0, 0.0);
 	
 	[flipAnimationLayer addSublayer:frontLayer];
 	
-	if (flipDirection == AFKPageFlipperDirectionRight) {
+	if (flipDirection == AFKPageFlipperDirectionDown) {
 		backLayer.contents = (id) [currentImage CGImage];
-		backLayer.contentsGravity = kCAGravityLeft;
+		backLayer.contentsGravity = kCAGravityBottom;
 		
-		frontLayer.contents = (id) [newImage CGImage];
-		frontLayer.contentsGravity = kCAGravityRight;
+		frontLayer.contents = (id) [nextImage CGImage];
+		frontLayer.contentsGravity = kCAGravityTop;
 		
-		CATransform3D transform = CATransform3DMakeRotation(0.0, 0.0, 1.0, 0.0);
-		transform.m34 = 1.0f / 2500.0f;
+		CATransform3D transform = CATransform3DMakeRotation(0.0, -1.0, 0.0, 0.0);
+		transform.m34 = 1.0f / 6000.0f;
 		
 		flipAnimationLayer.transform = transform;
 		
 		currentAngle = startFlipAngle = 0;
 		endFlipAngle = -M_PI;
 	} else {
-		backLayer.contentsGravity = kCAGravityLeft;
-		backLayer.contents = (id) [newImage CGImage];
+		backLayer.contentsGravity = kCAGravityBottom;
+		backLayer.contents = (id) [nextImage CGImage];
 		
 		frontLayer.contents = (id) [currentImage CGImage];
-		frontLayer.contentsGravity = kCAGravityRight;
+		frontLayer.contentsGravity = kCAGravityTop;
 		
-		CATransform3D transform = CATransform3DMakeRotation(-M_PI / 1.1, 0.0, 1.0, 0.0);
-		transform.m34 = 1.0f / 2500.0f;
+		CATransform3D transform = CATransform3DMakeRotation(-M_PI / 1.1, -1.0, 0.0, 0.0);
+		transform.m34 = 1.0f / 6000.0f;
 		
 		flipAnimationLayer.transform = transform;
 		
@@ -167,6 +165,8 @@
 	
 	backgroundAnimationLayer = Nil;
 	flipAnimationLayer = Nil;
+  revealedLayer = Nil;
+  coveredLayer = Nil;
 	
 	animating = NO;
 	
@@ -184,27 +184,28 @@
 
 
 - (void) setFlipProgress:(float) progress setDelegate:(BOOL) setDelegate animate:(BOOL) animate {
-    if (animate) {
-        animating = YES;
-    }
-    
-	float newAngle = startFlipAngle + progress * (endFlipAngle - startFlipAngle);
+  if (animate) animating = YES;
+  
+  float newAngle = startFlipAngle + progress * (endFlipAngle - startFlipAngle);
 	
-	float duration = animate ? 0.5 * fabs((newAngle - currentAngle) / (endFlipAngle - startFlipAngle)) : 0;
+	float duration = animate ? 0.9f * fabs((newAngle - currentAngle) / (endFlipAngle - startFlipAngle)) : 0.0f;
 	
 	currentAngle = newAngle;
 	
 	CATransform3D endTransform = CATransform3DIdentity;
-	endTransform.m34 = 1.0f / 2500.0f;
-	endTransform = CATransform3DRotate(endTransform, newAngle, 0.0, 1.0, 0.0);	
+	endTransform.m34 = -1.0f / 6000.0f;
+	endTransform = CATransform3DRotate(endTransform, newAngle, 1.0, 0.0, 0.0);
 	
 	[flipAnimationLayer removeAllAnimations];
 							
 	[CATransaction begin];
 	[CATransaction setAnimationDuration:duration];
-	
+	[CATransaction setAnimationTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut]];
+  
 	flipAnimationLayer.transform = endTransform;
-	
+  revealedLayer.opacity = MIN(1.0f, sqrtf(2.0f*progress));
+  coveredLayer.opacity = MIN(1.0, sqrtf(2.0f*(1.0f-progress)));
+
 	[CATransaction commit];
 	
 	if (setDelegate) {
@@ -239,6 +240,7 @@
 	}
 	
 	currentView = [value retain];
+  self.currentImage = [currentView imageByRenderingView];
 }
 
 
@@ -251,6 +253,7 @@
 	}
 	
 	nextView = [value retain];
+  self.nextImage = [nextView imageByRenderingView];
 }
 
 
@@ -262,7 +265,7 @@
 		return FALSE;
 	}
 	
-	flipDirection = value < currentPage ? AFKPageFlipperDirectionRight : AFKPageFlipperDirectionLeft;
+	flipDirection = value < currentPage ? AFKPageFlipperDirectionDown : AFKPageFlipperDirectionUp;
 	
 	currentPage = value;
 	
@@ -352,7 +355,7 @@
 	if (recognizer.state == UIGestureRecognizerStateRecognized) {
 		NSInteger newPage;
 		
-		if ([recognizer locationInView:self].x < (self.bounds.size.width - self.bounds.origin.x) / 2) {
+		if ([recognizer locationInView:self].y < (self.bounds.size.height - self.bounds.origin.y) / 2) {
 			newPage = MAX(1, self.currentPage - 1);
 		} else {
 			newPage = MIN(self.currentPage + 1, numberOfPages);
@@ -373,14 +376,15 @@
 	
 	static NSInteger oldPage;
 
-	float translation = [recognizer translationInView:self].x;
+	float translation = [recognizer translationInView:self].y;
 	
-	float progress = translation / self.bounds.size.width;
+	float progress = translation*1.2 / self.bounds.size.height;
+  NSLog(@"progress %f", progress);
 	
-	if (flipDirection == AFKPageFlipperDirectionLeft) {
-		progress = MIN(progress, 0);
+	if (flipDirection == AFKPageFlipperDirectionUp) {
+		progress = MAX(-1.0f, MIN(progress, 0.0f));
 	} else {
-		progress = MAX(progress, 0);
+		progress = MIN(1.0f, MAX(progress, 0.0f));
 	}
 	
 	switch (recognizer.state) {
@@ -392,8 +396,7 @@
 			break;
 			
 			
-		case UIGestureRecognizerStateChanged:
-			
+		case UIGestureRecognizerStateChanged:			
 			if (hasFailed) {
 				return;
 			}
@@ -441,8 +444,9 @@
 				
 				return;
 			}
-			
-			if (fabs((translation + [recognizer velocityInView:self].x / 4) / self.bounds.size.width) > 0.5) {
+      float velocity = [recognizer velocityInView:self].y;
+      NSLog(@"velocity %f", fabsf(velocity));
+			if ((fabsf(velocity) > 1500.0f && fabsf(progress) > 0.1f) || fabsf(progress) > 0.5f) {
 				setNextViewOnCompletion = YES;
 				[self setFlipProgress:1.0 setDelegate:YES animate:YES];
 			} else {
@@ -483,13 +487,8 @@
 
 - (id)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
-		_tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapped:)];
 		_panRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panned:)];
-		
-		[_tapRecognizer requireGestureRecognizerToFail:_panRecognizer];
-		
-        [self addGestureRecognizer:_tapRecognizer];
-		[self addGestureRecognizer:_panRecognizer];
+    [self addGestureRecognizer:_panRecognizer];
     }
     return self;
 }
@@ -498,10 +497,11 @@
 - (void)dealloc {
 	self.dataSource = Nil;
 	self.currentView = Nil;
+  self.currentImage = Nil;
 	self.nextView = Nil;
-	self.tapRecognizer = Nil;
+  self.nextImage = Nil;
 	self.panRecognizer = Nil;
-    [super dealloc];
+  [super dealloc];
 }
 
 

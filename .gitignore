@@ -1,1 +1,4 @@
+*.DS_Store
+AFKPageFlipper.xcodeproj/project.xcworkspace
+AFKPageFlipper.xcodeproj/xcuserdata
 build

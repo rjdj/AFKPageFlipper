@@ -22,8 +22,8 @@
 
 
 typedef enum {
-	AFKPageFlipperDirectionLeft,
-	AFKPageFlipperDirectionRight,
+	AFKPageFlipperDirectionUp,
+	AFKPageFlipperDirectionDown,
 } AFKPageFlipperDirection;
 
 
@@ -38,6 +38,9 @@ typedef enum {
 	
 	CALayer *backgroundAnimationLayer;
 	CALayer *flipAnimationLayer;
+  
+  CALayer *revealedLayer;
+  CALayer *coveredLayer;
 	
 	AFKPageFlipperDirection flipDirection;
 	float startFlipAngle;
@@ -53,7 +56,6 @@ typedef enum {
 @property (nonatomic,retain) NSObject <AFKPageFlipperDataSource> *dataSource;
 @property (nonatomic,assign) NSInteger currentPage;
 
-@property (nonatomic, retain) UITapGestureRecognizer *tapRecognizer;
 @property (nonatomic, retain) UIPanGestureRecognizer *panRecognizer;
 
 @property (nonatomic,assign) BOOL disabled;
