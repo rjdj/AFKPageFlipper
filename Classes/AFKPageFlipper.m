@@ -166,7 +166,6 @@
 
 
 - (void)cleanupFlip {
-  NSLog(@"cleanupFlip");
 	[backgroundAnimationLayer removeFromSuperlayer];
 	[flipAnimationLayer removeFromSuperlayer];
 	
