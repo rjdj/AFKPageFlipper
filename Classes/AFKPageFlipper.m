@@ -243,11 +243,11 @@
 
 - (void)animateFirstPage {
   [self initFlip];
-  double delayInSeconds = 0.1;
+  double delayInSeconds = 0.01;
   dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
   dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-    [self setFlipProgress:0.33f setDelegate:NO animate:NO];
-    double delayInSeconds = 0.4;
+    [self setFlipProgress:0.5f setDelegate:NO animate:NO];
+    double delayInSeconds = 0.3;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
     dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
       setNextViewOnCompletion = NO;
