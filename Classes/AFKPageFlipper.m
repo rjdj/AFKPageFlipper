@@ -182,14 +182,10 @@
     if (flipDirection == AFKPageFlipperDirectionUp) {
       if (self.nextView) {
         self.currentView = self.nextView;
-      } else {
-        NSLog(@"fuck");
       }
     } else {
       if (self.prevView) {
         self.currentView = self.prevView;
-      } else {
-        NSLog(@"fuck");
       }
     }
 		self.nextView = currentPage+1 <= [self.dataSource numberOfPagesForPageFlipper:self] ? [self.dataSource viewForPage:self.currentPage+1 inFlipper:self] : nil;
@@ -502,14 +498,22 @@
 
 
 - (void)dealloc {
-	self.dataSource = Nil;
-	self.currentView = Nil;
-  self.currentImage = Nil;
-	self.nextView = Nil;
-  self.nextImage = Nil;
-  self.prevView = Nil;
-  self.prevImage = Nil;
-	self.panRecognizer = Nil;
+	[dataSource release];
+	[currentView release];
+  [currentImage release];
+	[nextView release];
+  [nextImage release];
+  [prevView release];
+  [prevImage release];
+	[_panRecognizer release];
+  
+	
+	[backgroundAnimationLayer release];
+	[flipAnimationLayer release];
+  
+  [revealedLayer release];
+  [coveredLayer release];
+  
   [super dealloc];
 }
 
